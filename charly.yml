@@ -112,3 +112,4 @@ github-actions-skill:
             
             - `/charly-image:layer` — candy authoring reference (`charly.yml` schema, task verbs, service declarations)
             - `/charly-check:check` — declarative testing (`check:` block, `charly check box`, `charly check live`)
+// download verb: see the pinned ACT_VERSION/ACTIONLINT_VERSION
