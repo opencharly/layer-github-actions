@@ -11,61 +11,28 @@ github-actions:
             and basic operability are deterministically verifiable.
         package:
             - guestfs-tools
+        var:
+            # Pinned release tags — concrete tags, NOT `latest`, and the reason is
+            # correctness rather than taste. The download verb content-addresses its cache by
+            # sha256 OF THE URL. With `latest` the URL is constant while the artifact behind it
+            # changes, so the cache would keep serving the first tarball it ever fetched.
+            ACT_VERSION: 0.2.89
+            ACTIONLINT_VERSION: 1.7.12
         plan:
-            - run: |
-                command=set -e
-                ACT_VERSION="0.2.85"
-                BUILD_ARCH=$(uname -m)
-                case "$BUILD_ARCH" in
-                  x86_64) ARCH=x86_64 ;;
-                  aarch64) ARCH=arm64 ;;
-                  *) echo "unsupported arch: $BUILD_ARCH" >&2; exit 1 ;;
-                esac
-                curl -fsSL "https://github.com/nektos/act/releases/download/v${ACT_VERSION}/act_Linux_${ARCH}.tar.gz" -o /tmp/act.tar.gz
-                tar -xzf /tmp/act.tar.gz -C /usr/bin/ act
-                chmod +x /usr/bin/act
-                rm -f /tmp/act.tar.gz
+            - run: install the pinned act CLI release tarball (var ACT_VERSION) — the declarative download verb keeps the content-addressed /tmp/downloads cache, the atomic .part to mv rename, and the stage-user-correct cache mount
+              download: "https://github.com/nektos/act/releases/download/v${ACT_VERSION}/act_Linux_$(case ${BUILD_ARCH} in aarch64) echo arm64;; *) echo ${BUILD_ARCH};; esac).tar.gz"
+              extract: tar.gz
+              extract_include: [act]
+              to: /usr/bin
+              unless_exists: /usr/bin/act
               run_as: root
-              command: |
-                set -e
-                ACT_VERSION="0.2.85"
-                BUILD_ARCH=$(uname -m)
-                case "$BUILD_ARCH" in
-                  x86_64) ARCH=x86_64 ;;
-                  aarch64) ARCH=arm64 ;;
-                  *) echo "unsupported arch: $BUILD_ARCH" >&2; exit 1 ;;
-                esac
-                curl -fsSL "https://github.com/nektos/act/releases/download/v${ACT_VERSION}/act_Linux_${ARCH}.tar.gz" -o /tmp/act.tar.gz
-                tar -xzf /tmp/act.tar.gz -C /usr/bin/ act
-                chmod +x /usr/bin/act
-                rm -f /tmp/act.tar.gz
-            - run: |
-                command=set -e
-                ACTIONLINT_VERSION="1.7.12"
-                BUILD_ARCH=$(uname -m)
-                case "$BUILD_ARCH" in
-                  x86_64) ARCH=amd64 ;;
-                  aarch64) ARCH=arm64 ;;
-                  *) echo "unsupported arch: $BUILD_ARCH" >&2; exit 1 ;;
-                esac
-                curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_${ARCH}.tar.gz" -o /tmp/actionlint.tar.gz
-                tar -xzf /tmp/actionlint.tar.gz -C /usr/local/bin/ actionlint
-                chmod +x /usr/local/bin/actionlint
-                rm -f /tmp/actionlint.tar.gz
+            - run: install the pinned actionlint release tarball (var ACTIONLINT_VERSION) — the declarative download verb keeps the content-addressed /tmp/downloads cache, the atomic .part to mv rename, and the stage-user-correct cache mount
+              download: "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_${ARCH}.tar.gz"
+              extract: tar.gz
+              extract_include: [actionlint]
+              to: /usr/local/bin
+              unless_exists: /usr/local/bin/actionlint
               run_as: root
-              command: |
-                set -e
-                ACTIONLINT_VERSION="1.7.12"
-                BUILD_ARCH=$(uname -m)
-                case "$BUILD_ARCH" in
-                  x86_64) ARCH=amd64 ;;
-                  aarch64) ARCH=arm64 ;;
-                  *) echo "unsupported arch: $BUILD_ARCH" >&2; exit 1 ;;
-                esac
-                curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_${ARCH}.tar.gz" -o /tmp/actionlint.tar.gz
-                tar -xzf /tmp/actionlint.tar.gz -C /usr/local/bin/ actionlint
-                chmod +x /usr/local/bin/actionlint
-                rm -f /tmp/actionlint.tar.gz
             - check: the act CLI is installed at its fixed path
               file:
                 file: /usr/bin/act
@@ -145,3 +112,4 @@ github-actions-skill:
             
             - `/charly-image:layer` — candy authoring reference (`charly.yml` schema, task verbs, service declarations)
             - `/charly-check:check` — declarative testing (`check:` block, `charly check box`, `charly check live`)
+// download verb: see the pinned ACT_VERSION/ACTIONLINT_VERSION
