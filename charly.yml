@@ -1,7 +1,5 @@
-version: 2026.240.1943
 github-actions:
     candy:
-        version: 2026.242.1330
         description: |
             Local GitHub Actions execution and workflow linting via act and actionlint.
             Installs the act CLI at /usr/bin/act for running GitHub Actions
